@@ -41,7 +41,12 @@
 
 ## Final verification gaps
 
-- [ ] Push and verify the current verified MVP commit in the public GitHub repository
-- [ ] Remove library URL fallbacks and require a real fileUrl for every rendered resource
-- [ ] Remove feature starter arrays and drive quiz, flashcard, and library screens entirely from tRPC data
-- [ ] Add meaningful tests for the implemented quiz, flashcard, library, and content procedures
+- [x] Push and verify the current verified MVP commit in the public GitHub repository
+- [x] Remove library URL fallbacks and require a real fileUrl for every rendered resource
+- [x] Remove feature starter arrays and drive quiz, flashcard, and library screens entirely from tRPC data
+- [x] Add meaningful tests for the implemented quiz, flashcard, library, and content procedures
+
+- [x] Add Vitest coverage for server content procedures and DB-empty fallback responses
+
+- [x] Mock empty database helpers to prove every tRPC content fallback branch
+- [x] Mock non-empty database helpers to prove database rows take precedence over fallback content

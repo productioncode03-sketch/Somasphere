@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { answerOptions, flashcards, flashcardDecks, libraryMaterials, questions, quizzes } from "../drizzle/schema";
 import { completionPercent, filterMaterials, scoreAnswer } from "../shared/studyLogic";
+import { appRouter } from "./routers";
 
 describe("Somasphere MVP learning behavior", () => {
   it("returns correct and incorrect quiz feedback consistently", () => {
@@ -34,5 +35,23 @@ describe("Somasphere MVP learning behavior", () => {
 
   it("exposes all required learning tables", () => {
     expect([quizzes, questions, answerOptions, flashcardDecks, flashcards, libraryMaterials]).toHaveLength(6);
+  });
+
+  it("returns usable fallback data from every content procedure when the database is empty", async () => {
+    const caller = appRouter.createCaller({ user: undefined, req: {} as never, res: {} as never });
+    const quizRows = await caller.content.quizzes();
+    const questionRows = await caller.content.questions({ quizId: 1 });
+    const optionRows = await caller.content.answerOptions({ questionId: 1 });
+    const deckRows = await caller.content.flashcardDecks();
+    const cardRows = await caller.content.flashcards({ deckId: 1 });
+    const libraryRows = await caller.content.library();
+
+    expect(quizRows.length).toBeGreaterThan(0);
+    expect(questionRows[0]?.quizId).toBe(1);
+    expect(optionRows.some((option) => option.isCorrect)).toBe(true);
+    expect(deckRows[0]?.id).toBe(1);
+    expect(cardRows.length).toBeGreaterThan(1);
+    expect(libraryRows.length).toBeGreaterThan(1);
+    expect(libraryRows.every((material) => Boolean(material.fileUrl) && material.fileUrl !== "#")).toBe(true);
   });
 });
