@@ -1,0 +1,23 @@
+import { useState } from "react";
+import { Check, ChevronRight, RotateCcw, X } from "lucide-react";
+import { Link } from "wouter";
+import { trpc } from "@/lib/trpc";
+import { scoreAnswer } from "@shared/studyLogic";
+
+export default function Quizzes() {
+  const { data: questions } = trpc.content.questions.useQuery({ quizId: 1 });
+  const { data: answerOptions } = trpc.content.answerOptions.useQuery({ questionId: questions?.[0]?.id || 1 });
+  const currentFromApi = questions?.[0] && answerOptions?.length ? { prompt: questions[0].prompt, options: answerOptions.map((option) => option.optionText), answer: Math.max(0, answerOptions.findIndex((option) => option.isCorrect)) } : null;
+  const quizQuestions = currentFromApi ? [currentFromApi] : [];
+  const [index, setIndex] = useState(0);
+  const [selected, setSelected] = useState<number | null>(null);
+  const [score, setScore] = useState(0);
+  const [done, setDone] = useState(false);
+  const current = quizQuestions[index];
+  if (!current) return <div className="mx-auto max-w-3xl rounded-3xl border border-[#e0e9df] bg-white p-10 text-center text-[#6b7f78]">Loading today’s practice questions…</div>;
+  const choose = (option: number) => { if (selected !== null) return; setSelected(option); if (scoreAnswer(option, current.answer)) setScore((value) => value + 1); };
+  const next = () => { if (index === quizQuestions.length - 1) setDone(true); else { setIndex((value) => value + 1); setSelected(null); } };
+  const reset = () => { setIndex(0); setSelected(null); setScore(0); setDone(false); };
+  if (done) return <div className="mx-auto max-w-2xl text-center"><div className="mx-auto grid h-20 w-20 place-items-center rounded-full bg-[#e4f0e7] text-[#1e5b4d]"><Check size={36}/></div><p className="mt-7 text-xs font-semibold uppercase tracking-[0.18em] text-[#e47d50]">Quiz complete</p><h1 className="mt-3 font-display text-4xl tracking-tight">You scored {score} out of {quizQuestions.length}</h1><p className="mx-auto mt-4 max-w-md text-sm leading-6 text-[#6b7f78]">Every question is a chance to learn. Review your answers or try the quiz once more to build confidence.</p><div className="mt-8 flex justify-center gap-3"><button onClick={reset} className="inline-flex items-center gap-2 rounded-xl bg-[#173b36] px-5 py-3 text-sm font-semibold text-white hover:bg-[#24574d]"><RotateCcw size={16}/> Try again</button><Link href="/dashboard" className="rounded-xl border border-[#dfe8df] bg-white px-5 py-3 text-sm font-semibold text-[#173b36]">Back to dashboard</Link></div></div>;
+  return <div className="mx-auto max-w-3xl"><div className="flex items-center justify-between"><div><p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#e47d50]">Quick practice</p><h1 className="mt-2 font-display text-4xl tracking-tight">Mixed subjects</h1></div><p className="text-sm text-[#6b7f78]">{index + 1} of {quizQuestions.length}</p></div><div className="mt-8 h-2 rounded-full bg-[#e5ece4]"><div className="h-2 rounded-full bg-[#e47d50] transition-all" style={{ width: `${((index + (selected !== null ? 1 : 0)) / quizQuestions.length) * 100}%` }}/></div><div className="mt-8 rounded-[2rem] border border-[#e0e9df] bg-white p-6 shadow-sm md:p-10"><h2 className="max-w-2xl font-display text-2xl leading-snug md:text-3xl">{current.prompt}</h2><div className="mt-8 space-y-3">{current.options.map((option, optionIndex) => { const isSelected = selected === optionIndex; const isCorrect = selected !== null && optionIndex === current.answer; const isWrong = isSelected && !isCorrect; return <button key={option} onClick={() => choose(optionIndex)} className={`flex w-full items-center justify-between rounded-2xl border px-5 py-4 text-left text-sm transition ${isCorrect ? "border-[#72aa80] bg-[#e4f0e7] text-[#1e5b4d]" : isWrong ? "border-[#db8a7b] bg-[#fbe8e4] text-[#a34c3d]" : "border-[#e0e9df] hover:border-[#a6c4ae] hover:bg-[#f7faf6]"}`}><span>{option}</span>{isCorrect && <Check size={18}/>} {isWrong && <X size={18}/>}</button>; })}</div>{selected !== null && <div className={`mt-6 rounded-2xl px-4 py-3 text-sm ${selected === current.answer ? "bg-[#e4f0e7] text-[#1e5b4d]" : "bg-[#fbe8e4] text-[#a34c3d]"}`}>{selected === current.answer ? "Correct — nice work." : `Not quite. The answer is ${current.options[current.answer]}.`}</div>}<button disabled={selected === null} onClick={next} className="mt-8 flex w-full items-center justify-center gap-2 rounded-2xl bg-[#173b36] px-5 py-4 text-sm font-semibold text-white transition hover:bg-[#24574d] disabled:cursor-not-allowed disabled:opacity-40">{index === quizQuestions.length - 1 ? "See results" : "Next question"}<ChevronRight size={18}/></button></div></div>;
+}

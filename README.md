@@ -1,46 +1,58 @@
 # Somasphere
 
-Somasphere is an educational web app for Kenyan CBE learners. Its first starter experience pairs a calm, editorial React interface with an Express API foundation and Supabase authentication/database/storage integration points.
+Somasphere is a free, calm study platform for Kenyan CBE learners. The MVP helps students practise with quizzes, strengthen recall with flashcards, and find past papers and learning materials in one focused space.
+
+## MVP scope
+
+The current experience includes a public landing page, Manus OAuth sign-in entry points, protected dashboard routes, progress summaries, interactive multiple-choice quizzes with instant feedback and results, flip-style flashcards with progress tracking, and a filtered library with view and download links. Leaderboards, portfolios, advanced gamification, dark mode, and AI features are intentionally outside the MVP.
+
+## Technology
+
+The managed web project uses React, TypeScript, Vite, Tailwind CSS, Express, tRPC, Drizzle, and the project database layer. Authentication is intentionally handled by **Manus OAuth**, as required for this project. The database schema includes quizzes, questions, answer options, flashcard decks, flashcards, and library materials. Static resource records keep a `fileUrl`; file bytes should be stored through the project's storage layer rather than committed to the repository.
 
 ## Repository layout
 
-The repository keeps the requested `Backend/` and `Frontend/` concepts while preserving the managed frontend scaffold's `client/` path for local preview and hosting compatibility. The browser application currently lives in `client/`; `Frontend/` is reserved for future workspace-level frontend tooling and documentation. The API foundation lives in `Backend/`.
-
-| Area | Purpose |
+| Path | Purpose |
 | --- | --- |
-| `client/` | React 19, TypeScript, Vite, Tailwind 4, Wouter routes, and the starter pages. |
-| `Backend/` | Express, TypeScript, Supabase admin client, bearer-token middleware, and `/health` plus `/api/me` endpoints. |
-| `ideas.md` | The selected Learning Field Notes design direction and brand rules. |
-| `todo.md` | Current implementation checklist. |
+| `client/` | React pages, routes, layouts, UI components, and styles. |
+| `server/` | Express/tRPC server, authentication context, database helpers, and procedures. |
+| `drizzle/` | Database schema, migrations, and generated metadata. |
+| `shared/` | Shared types and constants. |
+| `Backend/` | Reserved workspace for the separately documented backend foundation. |
+| `Frontend/` | Reserved workspace documentation for the requested frontend/backend separation. |
+| `todo.md` | Implementation checklist and project history. |
 
-## Frontend pages
+## Local development
 
-The starter frontend includes a branded landing page at `/`, authentication forms at `/login` and `/signup`, and a dashboard at `/dashboard`. Authentication calls use the Supabase browser client and are safe to configure with the public anon key.
-
-## Backend setup
-
-From `Backend/`, install dependencies and create local environment variables based on `env.template`. The server expects `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `PORT`, and `FRONTEND_URL`. The service-role key must remain server-only and must never be copied into frontend variables.
-
-```bash
-cd Backend
-pnpm install
-cp env.template .env
-pnpm dev
-```
-
-The API starts on port `4000` by default. `GET /health` is public. `GET /api/me` requires a Supabase access token in the `Authorization: Bearer <token>` header.
-
-## Frontend setup
-
-From the repository root, install dependencies and start the managed preview:
+From the repository root, install dependencies and start the managed development server:
 
 ```bash
 pnpm install
 pnpm dev
 ```
 
-The browser client recognizes `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`. Until those values are supplied through project secrets or a local environment file, auth actions will return the expected Supabase configuration error rather than exposing a secret.
+The development server uses the managed project environment and should not require manually hardcoding a port. The frontend is served through the Express/Vite bridge. Manus OAuth configuration and built-in project environment variables are injected by the managed project; do not commit `.env` files or copy server-only secrets into frontend code.
 
-## Next implementation slice
+## Quality checks
 
-The next recommended step is to create the Supabase schema for profiles, subjects, quizzes, flashcards, and library resources, then replace the dashboard's starter cards with authenticated data. Keep row-level security enabled and use the backend service role only for trusted server-side operations.
+Run the following before handing over changes:
+
+```bash
+pnpm check
+pnpm test
+pnpm build
+```
+
+The test suite covers the OAuth logout cookie behavior and the MVP learning behavior, including quiz scoring, flashcard progress, library filtering, and the required schema tables.
+
+## Database workflow
+
+Update `drizzle/schema.ts` first, generate a migration with the project's Drizzle command, review the generated SQL, and apply schema changes through the managed database workflow. Do not insert demonstration customer reviews or testimonials. Library resources should reference real `fileUrl` values when content is added.
+
+## GitHub
+
+The public repository is available at [productioncode03-sketch/Somasphere](https://github.com/productioncode03-sketch/Somasphere). The completed MVP was committed and pushed to the `main` branch.
+
+## Design direction
+
+Somasphere uses a warm paper background, deep evergreen foundation, soft coral encouragement, rounded but disciplined surfaces, and calm study-coach language. The layout is mobile-first: public pages use a top navigation bar, while dashboard pages use a desktop sidebar and a mobile navigation treatment.
